@@ -4,7 +4,7 @@ def test_basicgo_constructor():
     basicGo = BasicGo()
     assert basicGo.board.tiles.ndim == 2
     assert basicGo.board.tiles.shape == (19, 19)
-    assert basicGo.board.tiles.dtype.name == "int32"
+    assert basicGo.board.tiles.dtype.name == "int32" or basicGo.board.tiles.dtype.name == "int64"
 
 def test_basicgo_gameOver():
     basicGo = BasicGo()

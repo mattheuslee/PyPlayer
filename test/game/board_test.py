@@ -4,7 +4,7 @@ def test_board_constructor():
     board = Board(5, 5)
     assert board.tiles.ndim == 2
     assert board.tiles.shape == (5, 5)
-    assert board.tiles.dtype.name == "int32"
+    assert board.tiles.dtype.name == "int32" or board.tiles.dtype.name == "int64"
 
 def test_board_setget():
     board = Board(5, 5)
