@@ -1,4 +1,3 @@
-import sys
 from board.tile import Tile
 
 def test_tile():
