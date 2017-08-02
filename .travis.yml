@@ -4,6 +4,6 @@ python:
   - "nightly"
 script:
   - export PYTHONPATH=./src
-  - pytest --cov=src
+  - pytest --cov=src/game
 after_success:
   - coveralls
