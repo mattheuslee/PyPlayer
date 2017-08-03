@@ -22,7 +22,7 @@ class MainApp:
     def human_ai_basicgo():
         basicGo = BasicGo()
         player = -1
-        basicGoAi = BasicGoAi()
+        basicGoAi = BasicGoAi(1)
         np.set_printoptions(linewidth = 100, formatter = { "int_kind": lambda x: "%3d" % x})
         while not basicGo.gameOver():
             print(basicGo.board.tiles)

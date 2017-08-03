@@ -1,7 +1,6 @@
 import os
 import random
 
-from game.basicgo import BasicGo
 from game.player import Player
 
 class BasicGoAi:
