@@ -3,37 +3,23 @@ from game.basicgo import BasicGo
 def test_basicgo_constructor():
     basicGo = BasicGo()
     assert basicGo.board.tiles.ndim == 2
-    assert basicGo.board.tiles.shape == (19, 19)
+    assert basicGo.board.tiles.shape == (basicGo.iDim, basicGo.jDim)
     assert basicGo.board.tiles.dtype.name == "int32" or basicGo.board.tiles.dtype.name == "int64"
 
 def test_basicgo_gameOver():
     basicGo = BasicGo()
     assert basicGo.gameOver() == False
-    for i in range(0, 19):
-        for j in range(0, 19):
-            basicGo.set(i, j, 1)
+    for i in range(basicGo.numTurns):
+        basicGo.set(0, 0, 1)
     assert basicGo.gameOver() == True
 
 def test_basicgo_winner():
     basicGo = BasicGo()
     assert basicGo.winner() == 0
-    for i in range(0, 19):
-        for j in range(0, 19):
-            basicGo.set(i, j, 1)
+    basicGo.set(0, 0, 1)
     assert basicGo.winner() == 1
-    basicGo = BasicGo()
-    for i in range(0, 19):
-        for j in range(0, 19):
-            basicGo.set(i, j, -1)
+    basicGo.set(0, 1, -1)
     assert basicGo.winner() == -1
-    basicGo = BasicGo()
-    for i in range(0, 19):
-        for j in range(0, 19):
-            if i % 2 == 0:
-                basicGo.set(i, j, -1)
-            else:
-                basicGo.set(i, j, 1)
-    assert basicGo.winner() == 1
 
 def test_basicgo_setGet():
     basicGo = BasicGo()
