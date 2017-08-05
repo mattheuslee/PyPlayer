@@ -26,7 +26,7 @@ class DeepQLearningAgent:
     def buildModel(self):
         model = Sequential()
         model.add(Dense(8, input_dim = self.stateSize, activation = "relu"))
-        model.add(Dense(self.actionSize, activation = "relu"))
+        model.add(Dense(self.actionSize, activation = "linear")) # using linear due to possibility of negative reward
         model.compile(loss = "mse", optimizer = Adam(lr = self.learningRate))
         return model
 
@@ -54,13 +54,14 @@ class DeepQLearningAgent:
 if __name__ == "__main__":
     NUM_CELLS = 15
     #game = FillGame(NUM_CELLS)
-    game = MoveGame(NUM_CELLS)
+    #game = MoveGame(NUM_CELLS)
+    game = PushGame(NUM_CELLS)
     stateSize = game.stateSize
     actionSize = game.actionSize
     agent = DeepQLearningAgent(stateSize, actionSize)
     isDone = False
     batchSize = 100
-    
+
     for episode in range(NUM_EPISODES):
         game.reset()
         state = game.state()
@@ -80,9 +81,9 @@ if __name__ == "__main__":
             #time.sleep(0.05)
         if len(agent.memory) > batchSize:
             agent.replay(batchSize)
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+

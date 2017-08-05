@@ -17,7 +17,7 @@ class FillGame:
             if cell == 0:
                 isDone = False
         return (self.cells, reward, isDone)
-    
+
     def state(self):
         return self.cells
 
@@ -25,6 +25,6 @@ class FillGame:
         for cell in self.cells:
             print(str(cell), end = " ")
         print("")
-    
+
     def reset(self):
         self.cells = np.zeros((self.numCells), dtype = "int32")
