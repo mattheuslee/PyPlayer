@@ -1,4 +1,5 @@
 import random
+import time
 import numpy as np
 from collections import deque
 from keras.models import Sequential
@@ -6,25 +7,28 @@ from keras.layers import Dense
 from keras.optimizers import Adam
 
 from ai.fillgame import FillGame
+from ai.movegame import MoveGame
+
+NUM_EPISODES = 10000
 
 class DeepQLearningAgent:
     def __init__(self, stateSize, actionSize):
         self.stateSize = stateSize
         self.actionSize = actionSize
-        self.memory = deque(maxlen = 2000)
+        self.memory = deque(maxlen = 500)
         self.gamma = 0.95 # future reward discount rate
         self.epsilon = 1.0 # exploration rate, or how often we try random actions
-        self.epsilonMin = 0.01
-        self.epsilonDecay = 0.999
+        self.epsilonMin = 0.1
+        self.epsilonDecay = 0.995
         self.learningRate = 0.001
         self.model = self.buildModel()
 
     def buildModel(self):
         model = Sequential()
-        model.add(Dense(24, input_dim = self.stateSize, activation = "relu"))
-        model.add(Dense(24, activation = "relu"))
+        model.add(Dense(8, input_dim = self.stateSize, activation = "relu"))
         model.add(Dense(self.actionSize, activation = "relu"))
         model.compile(loss = "mse", optimizer = Adam(lr = self.learningRate))
+        return model
 
     def addToMemory(self, state, action, reward, nextState, isDone):
         self.memory.append((state, action, reward, nextState, isDone))
@@ -46,3 +50,39 @@ class DeepQLearningAgent:
             self.model.fit(state, targetQValues, epochs = 1, verbose = 0)
         if self.epsilon > self.epsilonMin:
             self.epsilon *= self.epsilonDecay
+
+if __name__ == "__main__":
+    NUM_CELLS = 15
+    #game = FillGame(NUM_CELLS)
+    game = MoveGame(NUM_CELLS)
+    stateSize = game.stateSize
+    actionSize = game.actionSize
+    agent = DeepQLearningAgent(stateSize, actionSize)
+    isDone = False
+    batchSize = 100
+    
+    for episode in range(NUM_EPISODES):
+        game.reset()
+        state = game.state()
+        state = np.reshape(state, [1, stateSize])
+        for t in range(1000):
+            action = agent.act(state)
+            nextState, reward, isDone = game.step(action)
+            nextState = np.reshape(nextState, [1, stateSize])
+            agent.addToMemory(state, action, reward, nextState, isDone)
+            state = nextState
+            if isDone:
+                print("\repisode: {}/{}, time score: {}, score: {}, e: {:.2}"
+                      .format(episode, NUM_EPISODES, t, game.score, agent.epsilon))
+                time.sleep(1)
+                break
+            #game.output()
+            #time.sleep(0.05)
+        if len(agent.memory) > batchSize:
+            agent.replay(batchSize)
+    
+    
+    
+    
+    
+    
