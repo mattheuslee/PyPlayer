@@ -12,10 +12,10 @@ class PushGame:
         self.cells = np.zeros((numCells), dtype = "int32")
         self.playerPos = 0
         self.targetPos = numCells - 1
-        self.boxPos = int(numCells / 2)
-        self.cells[self.playerPos] = PLAYER_VAL
-        self.cells[self.targetPos] = TARGET_VAL
-        self.cells[self.boxPos] = BOX_VAL
+        self.boxPos = int(numCells / 3)
+        self.cells[self.playerPos] = self.PLAYER_VAL
+        self.cells[self.targetPos] = self.TARGET_VAL
+        self.cells[self.boxPos] = self.BOX_VAL
 
     def step(self, action):
         reward = 0
@@ -29,12 +29,13 @@ class PushGame:
             if self.playerPos == self.boxPos - 1: # pushes the box
                 self.playerPos += 1
                 self.boxPos += 1
-                reward = 1
                 if self.boxPos == self.targetPos: # box reached target, game over
-                    reward = 10
+                    reward = 1
                     isDone = True
-        self.cells[self.playerPos] = PLAYER_VAL
-        self.cells[self.boxPos] = BOX_VAL
+            else:
+                self.playerPos += 1
+        self.cells[self.playerPos] = self.PLAYER_VAL
+        self.cells[self.boxPos] = self.BOX_VAL
         return (self.cells, reward, isDone)
 
     def state(self):
@@ -50,6 +51,11 @@ class PushGame:
         self.cells[self.playerPos] = 0
         self.cells[self.boxPos] = 0
         self.playerPos = 0
-        self.boxPos = int(self.numCells / 2)
-        self.cells[self.playerPos] = PLAYER_VAL
-        self.cells[self.boxPos] = BOX_VAL
+        self.boxPos = int(self.numCells / 3)
+        self.cells[self.playerPos] = self.PLAYER_VAL
+        self.cells[self.boxPos] = self.BOX_VAL
+        self.cells[self.targetPos] = self.TARGET_VAL
+
+
+
+
