@@ -2,7 +2,7 @@ import random
 import numpy as np
 
 from keras.models import Sequential
-from keras.layers import Dense, Convolution2D, Flatten
+from keras.layers import Dense
 from keras.optimizers import Adam
 
 class PushGame1D:
@@ -54,7 +54,7 @@ class PushGame1D:
         return (self.cells, reward, isDone)
 
     def state(self):
-        return self.cells
+        return np.reshape(self.cells, [1, self.stateSize])
 
     def output(self):
         stringOutput = ""
@@ -82,23 +82,22 @@ class PushGame2D:
     def __init__(self):
         self.stateSize = self.I_DIM * self.J_DIM
         self.actionSize = 4
+        self.stateSetup()
+
+    def stateSetup(self):
         self.cells = np.zeros((self.I_DIM, self.J_DIM), dtype = "int32")
         self.playerPos = np.array([0, 0], dtype = "int32")
-        self.boxPos = np.array([int(self.I_DIM / 3), int(self.J_DIM / 3)], dtype = "int32")
+        self.boxPos = np.array([2, 2], dtype = "int32")
+        #self.boxPos = np.array([int(self.I_DIM / 2), int(self.J_DIM / 2)], dtype = "int32")
         self.targetPos = np.array([int(self.I_DIM - 1), int(self.J_DIM - 1)], dtype = "int32")
-        self.hellPos = np.array([(0, 0), (self.I_DIM - 1, 0), (0, self.J_DIM - 1)], dtype = "int32")
-
         self.cells[self.playerPos[0]][self.playerPos[1]] = self.PLAYER_VAL
         self.cells[self.boxPos[0]][self.boxPos[1]] = self.BOX_VAL
-        self.cells[self.targetPos[0]][self.targetPos[1]] = self.TARGET_VAL
+        #self.cells[self.targetPos[0]][self.targetPos[1]] = self.TARGET_VAL
 
     def buildModel(self, learningRate):
         model = Sequential()
-        numConvNodes = 5
-        convSize = 2
-        model.add(Convolution2D(numConvNodes, (convSize, convSize), activation = "relu", input_shape = (self.I_DIM, self.J_DIM, 1)))
-        model.add(Flatten())
-        hiddenNodes = self.I_DIM * self.J_DIM
+        hiddenNodes = int(self.I_DIM * self.J_DIM * 2)
+        model.add(Dense(hiddenNodes, input_dim = self.stateSize, activation = "relu"))
         model.add(Dense(hiddenNodes, activation = "relu"))
         model.add(Dense(self.actionSize, activation = "linear")) # linear due to negative reward
         model.compile(loss = "mse", optimizer = Adam(lr = learningRate))
@@ -112,7 +111,7 @@ class PushGame2D:
         if action == 0: # move left
             if (self.playerPos[0] == self.boxPos[0]
                     and self.playerPos[1] - 1 == self.boxPos[1]
-                    and self.boxPos[1] > 0): # pushes the box
+                    and self.boxPos[1] > 0): #pushes the box
                 self.playerPos[1] -= 1
                 self.boxPos[1] -= 1
             elif self.playerPos[1] > 0: # just move
@@ -123,7 +122,7 @@ class PushGame2D:
                     and self.boxPos[1] != self.J_DIM - 1): # pushes the box
                 self.playerPos[1] += 1
                 self.boxPos[1] += 1
-            elif self.playerPos[1] != self.J_DIM - 1: # just move
+            elif self.playerPos[0] != self.boxPos[0] and self.playerPos[1] < self.boxPos[1]: # cannot move past the box
                 self.playerPos[1] += 1
         elif action == 2: # move up
             if (self.playerPos[0] - 1 == self.boxPos[0]
@@ -139,27 +138,27 @@ class PushGame2D:
                     and self.boxPos[0] != self.I_DIM - 1): # pushes the box
                 self.playerPos[0] = 1
                 self.boxPos[0] += 1
-            elif self.playerPos[0] != self.I_DIM - 1: # just move
+            elif self.playerPos[1] != self.boxPos[1] and self.playerPos[0] < self.boxPos[0]: # cannot move past the box
                 self.playerPos[0] += 1
 
         if np.array_equal(self.boxPos, self.targetPos): # box reached the target
             reward = 1
             isDone = True
-        elif (np.array_equal(self.boxPos, self.hellPos[0])   # pushed box into unreachable area,
-             or np.array_equal(self.boxPos, self.hellPos[1]) # game over
-             or np.array_equal(self.boxPos, self.hellPos[2])):
+        elif self.boxPos[0] == 0 or self.boxPos[1] == 0: # pushed to the wrong edge, game over
             reward = -1
             isDone = True
-        else:
+        else: # game continues
             self.cells[self.playerPos[0]][self.playerPos[1]] = self.PLAYER_VAL
             self.cells[self.boxPos[0]][self.boxPos[1]] = self.BOX_VAL
 
         return (self.state(), reward, isDone)
 
     def state(self):
-        return np.reshape(self.cells, (1, self.I_DIM, self.J_DIM))
-
+        return np.reshape(self.cells, [1, self.stateSize])
+        
     def output(self):
+        for bs in range(64):
+            print("\b\b", end = "")
         stringOutput = ""
         for row in self.cells:
             for cell in row:
@@ -171,11 +170,7 @@ class PushGame2D:
     def reset(self):
         self.cells[self.playerPos[0]][self.playerPos[1]] = 0
         self.cells[self.boxPos[0]][self.boxPos[1]] = 0
-        self.playerPos = np.array([0, 0], dtype = "int32")
-        self.boxPos = np.array([int(self.I_DIM / 3), int(self.J_DIM / 3)], dtype = "int32")
-        self.cells[self.playerPos[0]][self.playerPos[1]] = self.PLAYER_VAL
-        self.cells[self.boxPos[0]][self.boxPos[1]] = self.BOX_VAL
-        self.cells[self.targetPos[0]][self.targetPos[1]] = self.TARGET_VAL
+        self.stateSetup()
 
 
 

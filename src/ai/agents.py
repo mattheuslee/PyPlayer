@@ -2,6 +2,7 @@ import random
 import time
 import numpy as np
 from collections import deque
+from keras.models import load_model
 
 from ai.pushgame import PushGame1D, PushGame2D
 
@@ -11,11 +12,11 @@ class DeepQLearningAgent:
     def __init__(self, game):
         self.stateSize = game.stateSize
         self.actionSize = game.actionSize
-        self.memory = deque(maxlen = 100)
-        self.gamma = 0.95 # future reward discount rate
+        self.memory = deque(maxlen = 1000)
+        self.gamma = 0.9 # future reward discount rate
         self.epsilon = 1.0 # exploration rate, or how often we try random actions
-        self.epsilonMin = 0.01
-        self.epsilonDecay = 0.999
+        self.epsilonMin = 0.05
+        self.epsilonDecay = 0.99
         self.learningRate = 0.001
         self.model = game.buildModel(self.learningRate)
 
@@ -41,18 +42,20 @@ class DeepQLearningAgent:
             self.epsilon *= self.epsilonDecay
 
 if __name__ == "__main__":
-    #game = PushGame1D()
-    game = PushGame2D()
+    game = PushGame1D()
+    #game = PushGame2D()
     agent = DeepQLearningAgent(game)
     stateSize = game.stateSize
-    batchSize = 32
-    
-    interval = 1
+    batchSize = 100
+
+    interval = 100
+
+    agent.model = load_model("push1D.h5")
+    #agent.model.save("push1D.h5")
 
     for episode in range(NUM_EPISODES):
         game.reset()
         state = game.state()
-        state = np.reshape(state, [1, stateSize])
         for t in range(500):
             action = agent.act(state)
             nextState, reward, isDone = game.step(action)
@@ -60,18 +63,17 @@ if __name__ == "__main__":
             agent.addToMemory(state, action, reward, nextState, isDone)
             state = nextState
             if isDone:
-                print("\repisode: {}/{}, num moves: {}, e: {:.2}"
-                      .format(episode, NUM_EPISODES, t + 1, agent.epsilon))
+                print("\repisode: {}/{}, num moves: {}, reward: {}, e: {:.2}"
+                      .format(episode, NUM_EPISODES, t + 1, reward, agent.epsilon))
                 if episode % interval == 0:
                     time.sleep(1)
                 break
             if episode % interval == 0:
                 game.output()
-                time.sleep(0.25)
+                time.sleep(0.1)
         if len(agent.memory) > batchSize:
             agent.replay(batchSize)
-
-
+        agent.model.save("push1D.h5")
 
 
 
