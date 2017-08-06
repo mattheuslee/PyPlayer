@@ -5,9 +5,6 @@ from keras.models import Sequential
 from keras.layers import Dense, Convolution2D, Flatten
 from keras.optimizers import Adam
 
-I = 0
-J = 1
-
 class PushGame1D:
     NUM_CELLS = 10
 
@@ -69,7 +66,7 @@ class PushGame1D:
         self.cells[self.playerPos] = 0
         self.cells[self.boxPos] = 0
         self.playerPos = 0
-        self.boxPos = int(self.numCells / 3)
+        self.boxPos = int(self.NUM_CELLS / 3)
         self.cells[self.playerPos] = self.PLAYER_VAL
         self.cells[self.boxPos] = self.BOX_VAL
         self.cells[self.targetPos] = self.TARGET_VAL
@@ -85,15 +82,15 @@ class PushGame2D:
     def __init__(self):
         self.stateSize = self.I_DIM * self.J_DIM
         self.actionSize = 4
-        self.cells = np.zeroes((self.I_DIM, self.J_DIM), dtype = "int32")
-        self.playerPos = (0, 0)
-        self.boxPos = (int(self.I_DIM / 3), int(self.J_DIM / 3))
-        self.targetPos = (self.I_DIM - 1, self.J_DIM - 1)
-        self.hellPos = ((0, 0), (self.I_DIM - 1, 0), (0, self.J_PIM - 1))
+        self.cells = np.zeros((self.I_DIM, self.J_DIM), dtype = "int32")
+        self.playerPos = np.array([0, 0], dtype = "int32")
+        self.boxPos = np.array([int(self.I_DIM / 3), int(self.J_DIM / 3)], dtype = "int32")
+        self.targetPos = np.array([int(self.I_DIM - 1), int(self.J_DIM - 1)], dtype = "int32")
+        self.hellPos = np.array([(0, 0), (self.I_DIM - 1, 0), (0, self.J_DIM - 1)], dtype = "int32")
 
-        self.cells[self.playerPos[I]][self.playerPos[J]] = self.PLAYER_VAL
-        self.cells[self.boxPos[I]][self.boxPos[J]] = self.BOX_VAL
-        self.cells[self.targetPos[I]][self.targetPos[J]] = self.TARGET_VAL
+        self.cells[self.playerPos[0]][self.playerPos[1]] = self.PLAYER_VAL
+        self.cells[self.boxPos[0]][self.boxPos[1]] = self.BOX_VAL
+        self.cells[self.targetPos[0]][self.targetPos[1]] = self.TARGET_VAL
 
     def buildModel(self, learningRate):
         model = Sequential()
@@ -110,44 +107,44 @@ class PushGame2D:
     def step(self, action):
         reward = 0
         isDone = False
-        self.cells[self.playerPos[I]][self.playerPos[J]] = 0
-        self.cells[self.boxPos[I]][self.boxPos[J]] = 0
+        self.cells[self.playerPos[0]][self.playerPos[1]] = 0
+        self.cells[self.boxPos[0]][self.boxPos[1]] = 0
         if action == 0: # move left
-            if self.playerPos[J] - 1 == self.boxPos[J]: # pushes the box
-                self.playerPos[J] -= 1
-                self.boxPos[J] -= 1
-            elif self.playerPos[J] > 0: # just move
-                self.playerPos[J] -= 1
+            if self.playerPos[0] == self.boxPos[0] and self.playerPos[1] - 1 == self.boxPos[1]: # pushes the box
+                self.playerPos[1] -= 1
+                self.boxPos[1] -= 1
+            elif self.playerPos[1] > 0: # just move
+                self.playerPos[1] -= 1
         elif action == 1: # move right
-            if self.playerPos[J] = self.boxPos[J] - 1: # pushes the box
-                self.playerPos[J] += 1
-                self.boxPos[J] += 1
-            elif self.playerPos[J] != self.J_DIM - 1: # just move
-                self.playerPos[J] += 1
+            if self.playerPos[0] == self.boxPos[0] and self.playerPos[1] == self.boxPos[1] - 1: # pushes the box
+                self.playerPos[1] += 1
+                self.boxPos[1] += 1
+            elif self.playerPos[1] != self.J_DIM - 1: # just move
+                self.playerPos[1] += 1
         elif action == 2: # move up
-            if self.playerPos[I] - 1 = self.boxPos[I]: # pushes the box
-                self.playerPos[I] -= 1
-                self.boxPos[I] -= 1
-            elif self.playerPos[I] > 0: # just move
-                self.playerPos[I] -= 1
+            if self.playerPos[0] - 1 == self.boxPos[0] and self.playerPos[1] == self.boxPos[1]: # pushes the box
+                self.playerPos[0] -= 1
+                self.boxPos[0] -= 1
+            elif self.playerPos[0] > 0: # just move
+                self.playerPos[0] -= 1
         else: # move down
-            if self.playerPos[I] = self.boxPos[I] - 1: # pushes the box
-                self.playerPos[I] += 1
-                self.boxPos[I] += 1
-            elif self.playerPos[I] != self.I_DIM - 1: # just move
-                self.playerPos[I] += 1
+            if self.playerPos[0] == self.boxPos[0] - 1 and self.playerPos[1] == self.boxPos[1]: # pushes the box
+                self.playerPos[0] = 1
+                self.boxPos[0] += 1
+            elif self.playerPos[0] != self.I_DIM - 1: # just move
+                self.playerPos[0] += 1
 
-        if cmp(self.boxPos, self.targetPos) == 0: # box reached the target
+        if np.array_equal(self.boxPos, self.targetPos): # box reached the target
             reward = 1
             isDone = True
-        elif cmp(self.boxPos, self.hellPos[0]) == 0 or
-             cmp(self.boxPos, self.hellPos[1]) == 0 or
-             cmp(self.boxPos, self.hellPos[2]) == 0: # pushed box into unreachable area, game over
+        elif (np.array_equal(self.boxPos, self.hellPos[0])   # pushed box into unreachable area,
+             or np.array_equal(self.boxPos, self.hellPos[1]) # game over
+             or np.array_equal(self.boxPos, self.hellPos[2])):
             reward = -1
             isDone = True
-
-        self.cells[self.playerPos[I]][self.playerPos[J]] = self.PLAYER_VAL
-        self.cells[self.boxPos[I]][self.boxPos[J]] = self.BOX_VAL
+        else:
+            self.cells[self.playerPos[0]][self.playerPos[1]] = self.PLAYER_VAL
+            self.cells[self.boxPos[0]][self.boxPos[1]] = self.BOX_VAL
 
         return (self.state(), reward, isDone)
 
@@ -158,15 +155,19 @@ class PushGame2D:
         stringOutput = ""
         for row in self.cells:
             for cell in row:
-                stringOutput = stringOutput + str(cell) + " "
+                tempOutput = "%4s" % str(cell)
+                stringOutput = stringOutput + tempOutput
             stringOutput = stringOutput + "\n"
-        print("\r{}".format(stringOutput), end = "")
+        print("\r{}".format(stringOutput))
 
     def reset(self):
-        self.cells[self.playerPos[I]][self.playerPos[J]] = 0
-        self.cells[self.boxPos[I]][self.boxPos[J]] = 0
-        self.playerPos = (0, 0)
-        self.boxPos = (int(self.I_DIM / 3), int(self.J_DIM / 3))
-        self.cells[self.playerPos[I]][self.playerPos[J]] = self.PLAYER_VAL
-        self.cells[self.boxPos[I]][self.boxPos[J]] = self.BOX_VAL
-        self.cells[self.targetPos[I]][self.targetPos[J]] = self.TARGET_VAL
+        self.cells[self.playerPos[0]][self.playerPos[1]] = 0
+        self.cells[self.boxPos[0]][self.boxPos[1]] = 0
+        self.playerPos = np.array([0, 0], dtype = "int32")
+        self.boxPos = np.array([int(self.I_DIM / 3), int(self.J_DIM / 3)], dtype = "int32")
+        self.cells[self.playerPos[0]][self.playerPos[1]] = self.PLAYER_VAL
+        self.cells[self.boxPos[0]][self.boxPos[1]] = self.BOX_VAL
+        self.cells[self.targetPos[0]][self.targetPos[1]] = self.TARGET_VAL
+
+
+

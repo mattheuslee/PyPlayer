@@ -3,7 +3,7 @@ import time
 import numpy as np
 from collections import deque
 
-from ai.pushgame import PushGame1D
+from ai.pushgame import PushGame1D, PushGame2D
 
 NUM_EPISODES = 10000
 
@@ -41,9 +41,13 @@ class DeepQLearningAgent:
             self.epsilon *= self.epsilonDecay
 
 if __name__ == "__main__":
-    game = PushGame1D()
-    agent = DeepQLearningAgent(PushGame1D)
+    #game = PushGame1D()
+    game = PushGame2D()
+    agent = DeepQLearningAgent(game)
+    stateSize = game.stateSize
     batchSize = 32
+    
+    interval = 1
 
     for episode in range(NUM_EPISODES):
         game.reset()
@@ -58,12 +62,12 @@ if __name__ == "__main__":
             if isDone:
                 print("\repisode: {}/{}, num moves: {}, e: {:.2}"
                       .format(episode, NUM_EPISODES, t + 1, agent.epsilon))
-                if episode % 100 == 0:
+                if episode % interval == 0:
                     time.sleep(1)
                 break
-            if episode % 100 == 0:
+            if episode % interval == 0:
                 game.output()
-                time.sleep(0.1)
+                time.sleep(0.25)
         if len(agent.memory) > batchSize:
             agent.replay(batchSize)
 
