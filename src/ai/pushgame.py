@@ -110,25 +110,33 @@ class PushGame2D:
         self.cells[self.playerPos[0]][self.playerPos[1]] = 0
         self.cells[self.boxPos[0]][self.boxPos[1]] = 0
         if action == 0: # move left
-            if self.playerPos[0] == self.boxPos[0] and self.playerPos[1] - 1 == self.boxPos[1]: # pushes the box
+            if (self.playerPos[0] == self.boxPos[0]
+                    and self.playerPos[1] - 1 == self.boxPos[1]
+                    and self.boxPos[1] > 0): # pushes the box
                 self.playerPos[1] -= 1
                 self.boxPos[1] -= 1
             elif self.playerPos[1] > 0: # just move
                 self.playerPos[1] -= 1
         elif action == 1: # move right
-            if self.playerPos[0] == self.boxPos[0] and self.playerPos[1] == self.boxPos[1] - 1: # pushes the box
+            if (self.playerPos[0] == self.boxPos[0]
+                    and self.playerPos[1] == self.boxPos[1] - 1
+                    and self.boxPos[1] != self.J_DIM - 1): # pushes the box
                 self.playerPos[1] += 1
                 self.boxPos[1] += 1
             elif self.playerPos[1] != self.J_DIM - 1: # just move
                 self.playerPos[1] += 1
         elif action == 2: # move up
-            if self.playerPos[0] - 1 == self.boxPos[0] and self.playerPos[1] == self.boxPos[1]: # pushes the box
+            if (self.playerPos[0] - 1 == self.boxPos[0]
+                    and self.playerPos[1] == self.boxPos[1]
+                    and self.boxPos[0] > 0): # pushes the box
                 self.playerPos[0] -= 1
                 self.boxPos[0] -= 1
             elif self.playerPos[0] > 0: # just move
                 self.playerPos[0] -= 1
         else: # move down
-            if self.playerPos[0] == self.boxPos[0] - 1 and self.playerPos[1] == self.boxPos[1]: # pushes the box
+            if (self.playerPos[0] == self.boxPos[0] - 1
+                    and self.playerPos[1] == self.boxPos[1]
+                    and self.boxPos[0] != self.I_DIM - 1): # pushes the box
                 self.playerPos[0] = 1
                 self.boxPos[0] += 1
             elif self.playerPos[0] != self.I_DIM - 1: # just move
